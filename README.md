@@ -5,6 +5,10 @@ Example code for on the fly image resizing
 
 # NOTE: This sample uses version 2 of the wonderful [ImageSharp](https://github.com/SixLabors/ImageSharp) library. Version 3 of this library is not free for closed source commercial projects so make sure you get the appropriate license if you upgrade. Version 2 is enough for the vast majority of projects
 
+## Motivation
+
+A lot of systems allow users to upload pictures and then display them in various places in different ways. For example social networks would display the profile picture in many different sizes and shapes. At some point it is not practical to create all versions in advance as frontend devs and designers constantly come up and experiment with different sizes. Therefore it is useful to have a way to upload one main picture and have the system do the resizing on the fly when the frontend requests a picture with specific URL parameters. For example we might have a 800x1000 profile picture but at that specific place we require a cropped 80x80 version so we get the image from /images?imageId=xxxx&width=80&height=80&mode=crop This makes it easier to experiment with the frontend and get the most optimized version of an image for each situation
+
 ## How It Works
 
 This is a sample that does image resizing on the fly. The user uploads the base version and when the image is requested with different parameters in the URL the server will check if this version already exists and if it doesn't it will create one on the fly and store it for later use
