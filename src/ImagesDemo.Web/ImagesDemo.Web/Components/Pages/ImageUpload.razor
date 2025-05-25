@@ -1,0 +1,14 @@
+﻿@page "/ImageUpload"
+
+<h3>Upload an Image</h3>
+
+<form method="post" enctype="multipart/form-data" @formname="uploadFileForm" @onsubmit="SubmitAsync">
+    @if (!string.IsNullOrEmpty(UploadMessage))
+    {
+        <div class="alert alert-info">@UploadMessage</div>
+    }
+    <AntiforgeryToken />
+    <input type="file" name="File" accept="image/*" />
+    <br />
+    <button type="submit">Upload</button>
+</form>

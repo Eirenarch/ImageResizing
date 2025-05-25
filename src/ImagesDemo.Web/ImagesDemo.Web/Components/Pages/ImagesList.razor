@@ -1,0 +1,43 @@
+﻿@page "/ImagesList"
+@using ImagesDemo.Business.Images
+
+<h3>Images List</h3>
+
+@if (ImageInfos is null)
+{
+    <p>Loading...</p>
+}
+else if (!ImageInfos.Any())
+{
+    <p>No images found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Image</th>
+                <th>Content Type</th>
+                <th>Width</th>
+                <th>Height</th>
+                <th>Uploader</th>
+                <th>Timestamp (UTC)</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (ImageInfo image in ImageInfos)
+        {
+            <tr>
+                <td>@image.ImageInfoId</td>
+                <td><img src="@($"/Images?imageId={image.ImageInfoId}&width=100&height=100")"/></td>
+                <td>@image.ContentType</td>
+                <td>@image.Width</td>
+                <td>@image.Height</td>
+                <td>@image.UploaderId</td>
+                <td>@image.Timestamp.ToString("u")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
