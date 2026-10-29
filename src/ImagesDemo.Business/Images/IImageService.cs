@@ -55,7 +55,7 @@ public interface IImageService
     Task<string> SaveImageAsync(Stream sourceStream, int width, int height, ImageResizeMode imageResizeMode);
 
     /// <summary>
-    /// Saves an image to the blob storage with the specified file name and resizes to the proper dimensions. Smaller images will be upscaled.
+    /// Saves an image to the blob storage, resized to the proper dimensions and always encoded as JPEG (image/jpeg) regardless of the source format. Transparency is not preserved. Smaller images will be upscaled.
     /// </summary>
     /// <param name="sourceStream">The stream with the source image data</param>
     /// <param name="width">The resize width</param>
@@ -63,7 +63,18 @@ public interface IImageService
     /// <param name="imageResizeMode">Indicates what the resizer should do if the proportions do not match</param>
     /// <param name="currentUserId">The id of the user uploading the file</param>
     /// <returns>The ImageInfo for the newly uploaded image</returns>
-    Task<ImageInfo> SaveImageAsync(Stream sourceStream, int width, int height, ImageResizeMode imageResizeMode, string currentUserId);
+    Task<ImageInfo> SaveJpgImageAsync(Stream sourceStream, int width, int height, ImageResizeMode imageResizeMode, string currentUserId);
+
+    /// <summary>
+    /// Saves an image to the blob storage, resized to the proper dimensions and always encoded as PNG (image/png) regardless of the source format. Smaller images will be upscaled.
+    /// </summary>
+    /// <param name="sourceStream">The stream with the source image data</param>
+    /// <param name="width">The resize width</param>
+    /// <param name="height">The resize height</param>
+    /// <param name="imageResizeMode">Indicates what the resizer should do if the proportions do not match</param>
+    /// <param name="currentUserId">The id of the user uploading the file</param>
+    /// <returns>The ImageInfo for the newly uploaded image</returns>
+    Task<ImageInfo> SavePngImageAsync(Stream sourceStream, int width, int height, ImageResizeMode imageResizeMode, string currentUserId);
 
     /// <summary>
     /// Saves an image to the blob storage with the specified file name and resizes to the proper dimensions. Smaller images will be upscaled. If the aspect ratio does not match images will be padded.

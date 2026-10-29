@@ -1,8 +1,8 @@
 ﻿namespace ImagesDemo.Business.Images;
 
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Processing;
+using ImageDull.ImageSharp;
+using ImageDull.ImageSharp.Formats;
+using ImageDull.ImageSharp.Processing;
 
 public class ImageService : IImageService
 {
@@ -87,7 +87,27 @@ public class ImageService : IImageService
         await BlobStorageClient.DownloadImageAsync(fileName, outputStream);
     }
 
-    public async Task<ImageInfo> SaveImageAsync(Stream sourceStream, int width, int height, ImageResizeMode imageResizeMode, string currentUserId)
+    public Task<ImageInfo> SaveJpgImageAsync(Stream sourceStream, int width, int height, ImageResizeMode imageResizeMode, string currentUserId)
+    {
+        return SaveResizedImageAsync(sourceStream, width, height, imageResizeMode, currentUserId, ".jpg", "image/jpeg",
+            (image, stream) => image.SaveAsJpegAsync(stream));
+    }
+
+    public Task<ImageInfo> SavePngImageAsync(Stream sourceStream, int width, int height, ImageResizeMode imageResizeMode, string currentUserId)
+    {
+        return SaveResizedImageAsync(sourceStream, width, height, imageResizeMode, currentUserId, ".png", "image/png",
+            (image, stream) => image.SaveAsPngAsync(stream));
+    }
+
+    private async Task<ImageInfo> SaveResizedImageAsync(
+        Stream sourceStream,
+        int width,
+        int height,
+        ImageResizeMode imageResizeMode,
+        string currentUserId,
+        string fileExtension,
+        string contentType,
+        Func<Image, Stream, Task> encodeAsync)
     {
         ArgumentNullException.ThrowIfNull(sourceStream);
 
@@ -102,9 +122,10 @@ public class ImageService : IImageService
         int finalHeight = 0;
 
         string fileName = Guid.NewGuid().ToString();
-        IImageFormat format;
 
-        using (Image image = Image.Load(sourceStream, out format))
+        Image image = await Image.LoadAsync(sourceStream);
+
+        using (image)
         {
             image.Mutate(x => x.AutoOrient()); //Android is a cancer. Images come with some rotation
             image.Metadata.ExifProfile = null;
@@ -114,8 +135,8 @@ public class ImageService : IImageService
                 image.Mutate(x => x.Resize(resizeOptions));
             }
 
-            fileName += ".jpg";
-            image.SaveAsJpeg(memoryStream);
+            fileName += fileExtension;
+            await encodeAsync(image, memoryStream);
 
             finalWidth = image.Width;
             finalHeight = image.Height;
@@ -123,12 +144,12 @@ public class ImageService : IImageService
 
         memoryStream.Seek(0, SeekOrigin.Begin);
 
-        await BlobStorageClient.UploadImageAsync(fileName, memoryStream, "image/jpeg");
+        await BlobStorageClient.UploadImageAsync(fileName, memoryStream, contentType);
 
         ImageInfo imageInfo = new()
         {
             BlobFileName = fileName,
-            ContentType = format.DefaultMimeType,
+            ContentType = contentType,
             Width = finalWidth,
             Height = finalHeight,
             Timestamp = DateTime.UtcNow,
@@ -156,9 +177,10 @@ public class ImageService : IImageService
         int finalHeight = 0;
 
         string fileName = Guid.NewGuid().ToString();
-        IImageFormat format;
 
-        using (Image image = Image.Load(sourceStream, out format))
+        (Image image, IImageFormat format) = await Image.LoadWithFormatAsync(sourceStream);
+
+        using (image)
         {
             image.Mutate(x => x.AutoOrient()); //Android is a cancer. Images come with some rotation
             image.Metadata.ExifProfile = null;
@@ -171,12 +193,12 @@ public class ImageService : IImageService
             if (format.DefaultMimeType == "image/png")
             {
                 fileName += ".png";
-                image.SaveAsPng(memoryStream);
+                await image.SaveAsPngAsync(memoryStream);
             }
             else
             {
                 fileName += ".jpg";
-                image.SaveAsJpeg(memoryStream);
+                await image.SaveAsJpegAsync(memoryStream);
             }
 
             finalWidth = image.Width;
@@ -233,9 +255,9 @@ public class ImageService : IImageService
             Size = new Size(width, height)
         };
 
-        IImageFormat format;
+        (Image image, IImageFormat format) = await Image.LoadWithFormatAsync(sourceStream);
 
-        using (Image image = Image.Load(sourceStream, out format))
+        using (image)
         {
             if (image.Width != width || image.Height != height)
             {
@@ -263,12 +285,12 @@ public class ImageService : IImageService
             if (format.DefaultMimeType == "image/png")
             {
                 fileName += ".png";
-                image.SaveAsPng(memoryStream);
+                await image.SaveAsPngAsync(memoryStream);
             }
             else
             {
                 fileName += ".jpg";
-                image.SaveAsJpeg(memoryStream);
+                await image.SaveAsJpegAsync(memoryStream);
             }
         }
 

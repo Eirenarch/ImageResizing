@@ -58,12 +58,12 @@ public class ImageHandlerMiddleware
         {
             imageResizeMode = ImageResizeMode.Crop;
         }
-        else if(imageResizeModeQuery == "pad")
+        else if (imageResizeModeQuery == "pad")
         {
             imageResizeMode = ImageResizeMode.Pad;
         }
 
-            IImageService imageService = (IImageService)context.RequestServices.GetService(typeof(IImageService))!;
+        IImageService imageService = (IImageService)context.RequestServices.GetService(typeof(IImageService))!;
 
         IImage? image;
 
